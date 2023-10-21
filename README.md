@@ -7,6 +7,7 @@ A new file is returned with job variations for a specific career to the discord 
 - Get started with the discord bot creation: https://discord.com/developers/docs/getting-started
 - Take the `example.env` then copy and rename it to `.env`
 - Populate the missing fields for the ENV variables in the new `.env`
+- `npm install`
 - Start the server `npm run start`
 
 ## Note:
