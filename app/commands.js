@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { InstallGlobalCommands } from './utils.js';
+import { InstallGlobalCommands } from './discord.js';
 
 // Command containing options
 const XLS_INFO = {

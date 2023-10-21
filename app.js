@@ -1,22 +1,17 @@
 import "dotenv/config";
 import express from "express";
-import { InteractionType, InteractionResponseType } from "discord-interactions";
-import { VerifyDiscordRequest } from "./utils.js";
 import fetch from "node-fetch";
 import xlsx from "xlsx";
-import { Client, GatewayIntentBits } from "discord.js";
 import fs from 'fs';
+import { InteractionType, InteractionResponseType } from "discord-interactions";
+import { VerifyDiscordRequest, init as discord_init } from "./app/discord.js";
+import { chatCompletion } from "./app/openai.js"; // this needs to change to a function to query
 
-
-// Initialize the Discord client
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-});
-client.login(process.env.BOT_TOKEN); // Make sure you have your bot token in the .env file
+// Init the discord bot
+discord_init()
 
 // Create an express app
 const app = express();
-// Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
@@ -68,7 +63,7 @@ app.post("/interactions", async function (req, res) {
 
           // save a local copy
           // TODO: timestamp name generation
-          fs.writeFileSync('career_options.xls', newFileBuffer);
+          fs.writeFileSync('./files/career_options.xls', newFileBuffer);
 
           channel.send({
             content: `Here's the generated spreadsheet:`,
@@ -104,4 +99,5 @@ app.post("/interactions", async function (req, res) {
 
 app.listen(PORT, () => {
   console.log("Listening on port", PORT);
+  console.log(chatCompletion)
 });
