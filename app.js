@@ -21,7 +21,6 @@ app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 // Route entry point
 app.post("/interactions", async function (req, res) {
   const { type, data, channel_id, member } = req.body;
-  console.log(member.user.global_name)
   switch (type) {
     case InteractionType.APPLICATION_COMMAND:
       const { name } = data;
