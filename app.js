@@ -26,7 +26,7 @@ app.post("/interactions", async function (req, res) {
     case InteractionType.APPLICATION_COMMAND:
       const { name } = data;
       // TODO: Cleanup
-      if (name === "process") {
+      if (name === "process_careers") {
         if (data.resolved && data.resolved.attachments) {
           // We get the first sent attatchement below sent
           const attachmentId = Object.keys(data.resolved.attachments)[0];

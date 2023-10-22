@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import { InstallGlobalCommands } from './discord.js';
+import { InstallGlobalCommands } from './app/discord.js';
 
 // Command containing options
 const XLS_INFO = {
-  name: 'process',
+  name: 'process_careers',
   description: 'Process a file',
   options: [
     {

@@ -1,7 +1,7 @@
 {
-  "name": "getting-started",
-  "version": "1.0.0",
-  "description": "Discord example app",
+  "name": "excel-career-path-finder-bot",
+  "version": "0.0.1",
+  "description": "Create/Generate Careers based off uploaded xls file",
   "main": "app.js",
   "type": "module",
   "engines": {
