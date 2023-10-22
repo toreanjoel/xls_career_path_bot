@@ -2,12 +2,16 @@ import "dotenv/config";
 import express from "express";
 import fs from "fs";
 import { InteractionType, InteractionResponseType } from "discord-interactions";
-import { VerifyDiscordRequest, init as discord_init } from "./app/discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
+import { VerifyDiscordRequest } from "./app/discord.js";
 import { chatCompletion } from "./app/openai.js"; // this needs to change to a function to query
 import { xlsFileBuffer, parseSheet } from "./app/xls.js";
 
 // Init the discord bot
-discord_init();
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
+client.login(process.env.BOT_TOKEN);
 
 // Create an express app
 const app = express();
@@ -31,12 +35,6 @@ app.post("/interactions", async function (req, res) {
           const fileURL = data.resolved.attachments[attachmentId].url;
 
           try {
-            // TODO: Cleaup to make the payload less tokens for to run through AI
-            // This needs to be run through AI to get the new data
-            // We can send all as one but later we might need to make separate calls and slow it down
-            // sending all will make it easy to get duplicates and manage with no temprature
-            console.log(parseSheet(fileURL));
-
             const channel = await client.channels.fetch(channel_id);
 
             // save a local copy
@@ -63,7 +61,7 @@ app.post("/interactions", async function (req, res) {
             return res.send({
               type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
               data: {
-                content: `There was an error processing the file.`,
+                content: `There was an error processing the file. \n\n Error: ${JSON.stringify(error, null, 2)}`,
               },
             });
           }

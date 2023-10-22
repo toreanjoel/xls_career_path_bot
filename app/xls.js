@@ -1,5 +1,5 @@
 import xlsx from "xlsx";
-
+import fetch from "node-fetch";
 // Sheet tab name
 const SHEET = 'Sheet1';
 // The sheet data and table information
@@ -25,11 +25,12 @@ const xlsFileBuffer = xlsx.write(workbook, {
 
 // FUNCTIONS
 
+// Parse the data of a file uplaoded to get the json definition
 async function parseSheet(url) {
-    const response = await fetch(fileURL);
-    const fileBuffer = await response.buffer();
+    const response = await fetch(url);
+    const fileBuffer = await response.arrayBuffer();
     const workbook = xlsx.read(fileBuffer, { type: "buffer" });
-    return parsedData = xlsx.utils.sheet_to_json(
+    return xlsx.utils.sheet_to_json(
         workbook.Sheets[workbook.SheetNames[0]]
     );
 }
