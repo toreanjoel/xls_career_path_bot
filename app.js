@@ -20,8 +20,8 @@ app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
 // Route entry point
 app.post("/interactions", async function (req, res) {
-  const { type, data, channel_id } = req.body;
-
+  const { type, data, channel_id, member } = req.body;
+  console.log(member.user.global_name)
   switch (type) {
     case InteractionType.APPLICATION_COMMAND:
       const { name } = data;
@@ -37,7 +37,7 @@ app.post("/interactions", async function (req, res) {
           res.send({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-              content: "Attempting file processing. A message with a file will be sent to download once completed.",
+              content: `Processing... A message with a file will be attatched once completed.`,
             },
           });
 
@@ -79,7 +79,7 @@ app.post("/interactions", async function (req, res) {
               files: [
                 {
                   attachment: buffer,
-                  name: "career_options.xls",
+                  name: `career_options-${Date.now()}.xls`,
                 },
               ],
             });
