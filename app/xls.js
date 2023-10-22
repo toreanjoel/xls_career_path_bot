@@ -4,16 +4,16 @@ import fetch from "node-fetch";
 const SHEET = "Sheet1";
 
 // FUNCTIONS
-function createSheetDownloadable(data) {
+async function createSheetDownloadable(data) {
   // Setup new workbook
   const workbook = xlsx.utils.book_new();
-
+	console.log(data)
 	if (Array.isArray(data)) {
 		const worksheet = xlsx.utils.json_to_sheet(data);
-	
+		
 		// Setup the  workbeek and sheet information on a specific tab
 		xlsx.utils.book_append_sheet(workbook, worksheet, SHEET);
-	
+		
 		// file buffer that we will make the actual file
 		const xlsFileBuffer = xlsx.write(workbook, {
 			type: "buffer",
