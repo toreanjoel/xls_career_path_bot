@@ -28,6 +28,7 @@ app.post("/interactions", async function (req, res) {
       if (name === "process_careers") {
         if (data.resolved && data.resolved.attachments) {
           // We get the first sent attatchement below sent
+          console.log("LOG: ==== START ====")
           console.log("LOG: Get uploaded file data")
           const attachmentId = Object.keys(data.resolved.attachments)[0];
           // This will be the path where discord saves the files uploaded
@@ -67,7 +68,23 @@ app.post("/interactions", async function (req, res) {
             const buffer = createSheetDownloadable(JSON.parse(computePromptData.message.content))
             
             // If we cant get the buffer to make the file
-            if (!buffer) {
+            if (buffer) {
+              // save a local copy
+              console.log("LOG: Write generated file data to local fs")
+              fs.writeFileSync("./files/career_options.xls", buffer);
+              
+              console.log("LOG: DONE")
+              console.log("LOG: ==== END ====")
+              return channel.send({
+                content: `Here's the generated spreadsheet:`,
+                files: [
+                  {
+                    attachment: buffer,
+                    name: `career_options-${Date.now()}.xls`,
+                  },
+                ],
+              });
+            } else {
               return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
@@ -75,19 +92,6 @@ app.post("/interactions", async function (req, res) {
                 },
               });
             }
-            // save a local copy
-            console.log("LOG: Write generated file data to local fs")
-            fs.writeFileSync("./files/career_options.xls", buffer);
-            
-            return channel.send({
-              content: `Here's the generated spreadsheet:`,
-              files: [
-                {
-                  attachment: buffer,
-                  name: `career_options-${Date.now()}.xls`,
-                },
-              ],
-            });
           } catch (error) {
             console.error("Error:", error);
             // message to let user know
