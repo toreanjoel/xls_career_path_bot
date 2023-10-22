@@ -7,6 +7,7 @@ const openai = new OpenAI({
 
 // We clean the payload in order to hav it good for AI
 function toAIDataStructure(data) {
+	console.log("LOG: Take uploaded sheet file col/row data")
 	return data.map((item) => {
 		const [index, course_name, career_options] = Object.keys(item)
 		return {
@@ -20,6 +21,7 @@ function toAIDataStructure(data) {
 // Generate responses through AI
 export async function computeCourses(data) {
   try {
+		console.log("LOG: Create AI context data")
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-16k",
       messages: [

@@ -28,6 +28,7 @@ app.post("/interactions", async function (req, res) {
       if (name === "process_careers") {
         if (data.resolved && data.resolved.attachments) {
           // We get the first sent attatchement below sent
+          console.log("LOG: Get uploaded file data")
           const attachmentId = Object.keys(data.resolved.attachments)[0];
           // This will be the path where discord saves the files uploaded
           const fileURL = data.resolved.attachments[attachmentId].url;
@@ -41,7 +42,9 @@ app.post("/interactions", async function (req, res) {
           });
 
           // attempt to get and clean data
+          console.log("LOG: Read uploaded file data from discord stored CDN")
           const readUploadedFile = await parseSheet(fileURL)
+          console.log("LOG: Process the data using AI")
           const computePromptData = await computeCourses(readUploadedFile)
 
           if (!computePromptData) {
@@ -56,9 +59,11 @@ app.post("/interactions", async function (req, res) {
 
           // Attempt the downloader
           try {
+            console.log("LOG: Get Discord channel metadata")
             const channel = await client.channels.fetch(channel_id);
 
             // create the buffer for the spreadsheet
+            console.log("LOG: Create a spreadsheet file with generated data")
             const buffer = createSheetDownloadable(JSON.parse(computePromptData.message.content))
             
             // If we cant get the buffer to make the file
@@ -71,6 +76,7 @@ app.post("/interactions", async function (req, res) {
               });
             }
             // save a local copy
+            console.log("LOG: Write generated file data to local fs")
             fs.writeFileSync("./files/career_options.xls", buffer);
             
             return channel.send({
