@@ -4,8 +4,8 @@ import fs from "fs";
 import { InteractionType, InteractionResponseType } from "discord-interactions";
 import { Client, GatewayIntentBits } from "discord.js";
 import { VerifyDiscordRequest } from "./app/discord.js";
-import { chatCompletion } from "./app/openai.js"; // this needs to change to a function to query
-import { xlsFileBuffer, parseSheet } from "./app/xls.js";
+import { computeCourses } from "./app/openai.js"; // this needs to change to a function to query
+import { createSheetDownloadable, parseSheet } from "./app/xls.js";
 
 // Init the discord bot
 const client = new Client({
@@ -27,44 +27,73 @@ app.post("/interactions", async function (req, res) {
       const { name } = data;
       // TODO: Cleanup
       if (name === "process") {
-        // TODO: Consider limiting the file types
         if (data.resolved && data.resolved.attachments) {
           // We get the first sent attatchement below sent
           const attachmentId = Object.keys(data.resolved.attachments)[0];
           // This will be the path where discord saves the files uploaded
           const fileURL = data.resolved.attachments[attachmentId].url;
 
+          // message to let user know
+          res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: "Attempting file processing. A message with a file will be sent to download once completed.",
+            },
+          });
+
+          // attempt to get and clean data
+          const readUploadedFile = await parseSheet(fileURL)
+          const computePromptData = await computeCourses(readUploadedFile)
+
+          if (!computePromptData) {
+            // message to let user know
+            return res.send({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: {
+                content: "File issues, unable to process the file, try again or contact Torean",
+              },
+            });
+          }
+
+          // Attempt the downloader
           try {
             const channel = await client.channels.fetch(channel_id);
 
+            // create the buffer for the spreadsheet
+            const buffer = createSheetDownloadable(JSON.parse(computePromptData.message.content))
+            
+            // If we cant get the buffer to make the file
+            if (!buffer) {
+              return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                  content: "Unable to create the file to download. Try again.",
+                },
+              });
+            }
             // save a local copy
-            fs.writeFileSync("./files/career_options.xls", xlsFileBuffer);
-
-            channel.send({
+            fs.writeFileSync("./files/career_options.xls", buffer);
+            
+            return channel.send({
               content: `Here's the generated spreadsheet:`,
               files: [
                 {
-                  attachment: xlsFileBuffer,
+                  attachment: buffer,
                   name: "career_options.xls",
                 },
               ],
             });
-
-            return res.send({
-              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-              data: {
-                content: `Processed the data! Check the channel for the generated spreadsheet.`,
-              },
-            });
           } catch (error) {
             console.error("Error:", error);
+            // message to let user know
             return res.send({
               type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
               data: {
-                content: `There was an error processing the file. \n\n Error: ${JSON.stringify(error, null, 2)}`,
+                content: "There was an error.",
               },
             });
           }
+          
         }
       }
       break;
