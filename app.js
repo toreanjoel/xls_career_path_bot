@@ -3,8 +3,8 @@ import express from "express";
 import { InteractionType, InteractionResponseType } from "discord-interactions";
 import { Client, GatewayIntentBits } from "discord.js";
 import { VerifyDiscordRequest } from "./app/discord.js";
-import { computeCourses } from "./app/openai.js"; // this needs to change to a function to query
-import { createSheetDownloadable, parseSheet } from "./app/xls.js";
+import { computeCourses, queryAI } from "./app/openai.js"; // this needs to change to a function to query
+import { parseSheet } from "./app/xls.js";
 
 // Init the discord bot
 const client = new Client({
@@ -22,6 +22,7 @@ app.use(express.static('public'))
 app.post("/interactions", async function (req, res) {
   const { type, data, channel_id } = req.body;
 
+  console.log(req)
   switch (type) {
     case InteractionType.APPLICATION_COMMAND:
       const { name } = data;
@@ -50,6 +51,21 @@ app.post("/interactions", async function (req, res) {
           })
           return;
         }
+      }
+
+      // simple implementation to ask AI for something specific - we need to set limits here
+      if (name === "ai_query") {
+        res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: `A message will be sent with an answer, please wait.`,
+          },
+        });
+
+        const askAI = await queryAI(data)
+        const channel = await client.channels.fetch(channel_id);
+        channel.send(askAI.message.content)
+        return;
       }
       break;
 
@@ -82,23 +98,10 @@ async function processInBackground(data, channel_id, msgRef) {
   msgRef.edit("Processing: 20%")
   const computePromptData = await computeCourses(readUploadedFile);
 
-  msgRef.edit("Processing: 35%")
-
   msgRef.edit("Processing: 44%")
   const channel = await client.channels.fetch(channel_id);
-  // const buffer = await createSheetDownloadable(JSON.parse(computePromptData.message.content));
 
   msgRef.edit("Processing: 75%")
-  // if (!buffer) {
-  //   msgRef.edit("Processing failed.")
-  //   throw new Error("Unable to create the file to download.");
-  // }
-
-  msgRef.edit("Processing: 90%")
-  // channel.send({
-  //   content: `Here's the generated spreadsheet:`,
-  //   files: [{ attachment: buffer, name: `career_options-${Date.now()}.xls` }],
-  // });
 
   msgRef.edit("Processing Done. See code block below:")
 

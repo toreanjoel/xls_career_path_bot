@@ -17,21 +17,18 @@ function toAIDataStructure(data) {
   })
 }
 
-export async function computeCourse(data) {
-	//TODO: Sanatize the data
-	//TODO: Check the tokens of the data and break out or change models to use
+export async function queryAI(data) {
   try {
-    console.log("LOG: Create AI context data")
-    const structuredData = toAIDataStructure(data);
+    console.log("LOG: Noramal AI Query start")
 
     const messages = [
       {
         role: "system",
-        content: "Given a academic course / Job Career response that fills in potential career options or alternative options for the course/job. For each course/job, provide about 50 career options if possible. The career options should start with capital letters and be separated by a comma and a space. The answer should be clean and contain no explanatory or verbose text outside of the jobs/careers itself.\n",
+        content: "Help answer questions to the best of your abilities, if you dont know then say you dont know else answer.",
       },
       {
         role: "user",
-        content: JSON.stringify(structuredData),
+        content: JSON.stringify(data),
       }
     ];
 
@@ -44,7 +41,7 @@ export async function computeCourse(data) {
       presence_penalty: 0,
     });
 
-    console.log("LOG: Data that was sent to parse in AI")
+    console.log("LOG: After AI query response")
     return response.choices[0]
   } catch (error) {
     console.error("API call error:", error);

@@ -16,6 +16,20 @@ const XLS_INFO = {
   type: 1,
 };
 
-const ALL_COMMANDS = [XLS_INFO];
+const AI_QUERY = {
+  name: 'ai_query',
+  description: 'Ask AI for something specific. Ask Anything.',
+  options: [
+    {
+      type: 3,
+      name: 'query',
+      description: 'Send a question here, note that with every new question, the answer wont have context of the last ',
+      required: true,
+    }
+  ],
+  type: 1,
+};
+
+const ALL_COMMANDS = [XLS_INFO, AI_QUERY];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
